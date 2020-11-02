@@ -24,6 +24,10 @@
     <button v-on:click="handleClick">点击事件</button>
     <button @click="handleClick">点击事件</button>
   </div>
+
+  <script src="./Dep.js"></script>
+  <script src="./Watcher.js"></script>
+  <script src="./Observer.js"></script>
   <script src="./MVue.js"></script>
   <script>
     let vm = new MVue({
@@ -39,6 +43,7 @@
       },
       methods:{
         handleClick(){
+          this.$data.person.name ='123'
           console.log(this)
         }
       }
