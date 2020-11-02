@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>MVVM</title>
 </head>
 
 <body>
@@ -21,6 +21,8 @@
     <div v-text='person.name'></div>
     <div v-html='htmlStr'></div>
     <input type="text" v-model="msg">
+    <button v-on:click="handleClick">点击事件</button>
+    <button @click="handleClick">点击事件</button>
   </div>
   <script src="./MVue.js"></script>
   <script>
@@ -34,6 +36,11 @@
         },
         msg: "hello world",
         htmlStr: '<h1>hello world</h1>'
+      },
+      methods:{
+        handleClick(){
+          console.log(this)
+        }
       }
     })
   </script>

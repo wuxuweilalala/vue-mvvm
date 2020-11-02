@@ -6,7 +6,7 @@ const compileUtil = {
         }, vm.$data)
     },
     text(node, expr, vm) {
-      let value
+      let value;
       if(expr.indexOf('{{') !== -1){
         value = expr.replace(/\{\{(.+?)\}\}/g,(...args)=>{
          return this.getVal(args[1], vm);
@@ -25,7 +25,8 @@ const compileUtil = {
         this.updater.modelUpdater(node, value)
     },
     on(node, expr, vm, eventName) {
-
+        const fn = vm.$options.methods[expr]
+        node.addEventListener(eventName,fn.bind(vm),false)
     },
     // 更新的函数
     updater: {
@@ -83,12 +84,14 @@ class Compile {
                 // 是一个指令 v-text v-html v-model v-on:click
                 const directive = name.split('-')[1];
                 const [dirName, eventName] = directive.split(':');
-
                 // 更新数据 数据驱动视图
                 compileUtil[dirName](node, value, this.vm, eventName);
 
                 // 删除有指令的标签上的属性
                 node.removeAttribute('v-'+directive)
+            }else if(this.isEventName(name)){ //@click="handleClick"
+                const [,eventName] = name.split('@')
+                compileUtil.on(node,value,this.vm,eventName)
             }
         });
     }
@@ -97,9 +100,12 @@ class Compile {
       const content = node.textContent;
       // 正则匹配带有双括号的文本内容
       if(/\{\{(.+?)\}\}/.test(content)){
-        console.log(content)
         compileUtil.text(node,content,this.vm)
       }
+    }
+
+    isEventName(attrName){
+       return attrName.startsWith('@')
     }
 
     isDirective(attrName) {
