@@ -5,6 +5,11 @@ const compileUtil = {
             return data[currentVal]
         }, vm.$data)
     },
+    setVal(expr,vm,inputVal){
+         expr.split('.').reduce((data, currentVal) => {
+             data[currentVal] = inputVal
+        }, vm.$data)
+    },
     getContentVal(expr,vm){
       return  expr.replace(/\{\{(.+?)\}\}/g,(...args)=>{
             return this.getVal(args[1], vm);
@@ -14,7 +19,6 @@ const compileUtil = {
       let value;
       if(expr.indexOf('{{') !== -1){
         value = expr.replace(/\{\{(.+?)\}\}/g,(...args)=>{
-
             new Watcher(vm,args[1],()=>{
                 this.updater.textUpdater(node, this.getContentVal(expr,vm))
             });
@@ -36,13 +40,18 @@ const compileUtil = {
     },
     model(node, expr, vm) {
         const value = this.getVal(expr, vm);
+        // 绑定更新函数 数据更新视图
           new Watcher(vm,expr,(newVal)=>{
            this.updater.modelUpdater(node, newVal)
        });
+        // 视图=>数据=>视图
+        node.addEventListener('input',(e)=>{
+            this.setVal(expr,vm,e.target.value)
+        });
         this.updater.modelUpdater(node, value)
     },
     on(node, expr, vm, eventName) {
-        const fn = vm.$options.methods[expr]
+        const fn = vm.$options.methods[expr];
         node.addEventListener(eventName,fn.bind(vm),false)
     },
     // 更新的函数
@@ -152,7 +161,22 @@ class MVue {
             // 1.实现 Observer
             new Observer(this.$data);
             // 2.指令解析器
-            new Compile(this.$el, this)
+            new Compile(this.$el, this);
+
+            // 代理数据 this.$data.msg => this.msg
+            this.proxyData(this.$data)
+        }
+    }
+    proxyData(data){
+        for(const key in data){
+            Object.defineProperty(this,key,{
+                get(){
+                    return data[key]
+                },
+                set(newVal){
+                    data[key] = newVal;
+                }
+            })
         }
     }
 }
